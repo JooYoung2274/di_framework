@@ -34,6 +34,8 @@ class Container {
     }
 }
 
+const container = new Container();
+
 function Injectable() {
     return function (target: Constructor<any>) {
         container.register(target.name, target);
@@ -87,7 +89,6 @@ class UserController {
     }
 }
 
-const container = new Container();
 const userController = container.resolve<UserController>(UserController.name);
 registerRoutes(app, userController);
 
