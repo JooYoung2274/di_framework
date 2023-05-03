@@ -25,10 +25,12 @@ class Container {
 
     resolve<T>(key: string): T {
         const targetType = this.services.get(key);
+
         if (!targetType) {
             throw new Error(`Service not found: ${key}`);
         }
         const dependencies = Reflect.getMetadata('design:paramtypes', targetType) || [];
+
         const instances = dependencies.map((dependency: Constructor<any>) => this.resolve(dependency.name));
         return new targetType(...instances);
     }
@@ -61,6 +63,11 @@ function registerRoutes(app: express.Application, controller: any) {
     }
 }
 
+// 여기서 Injectable 데코레이터를 통해서 Repository, Service, Controller가 순서대로 container에 등록된다.
+// 중요한건 순서대로 등록됨.....
+// Repository보다 Service가 먼저 등록되면 에러가 날텐데 이걸 어떻게 순서를 지키게하지?
+// nestjs처럼 모듈을 만들어야하나
+// 아니근데 typedi는 도대체 어떻게 그걸 처리한거지 @Service 데코레이터가 사실 그 의존성 순서도 찾아가는거였나..?
 @Injectable()
 class UserRepository {
     // ...
@@ -90,6 +97,7 @@ class UserController {
 }
 
 const userController = container.resolve<UserController>(UserController.name);
+
 registerRoutes(app, userController);
 
 const port = process.env.PORT || 3000;
