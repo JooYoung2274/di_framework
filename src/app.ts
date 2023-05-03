@@ -10,84 +10,89 @@ app.use(express.json());
 
 const corsOptions = {
     origin: '*',
-    // origin: '*',
     credentials: true,
 };
 app.use(cors(corsOptions));
 
-// 일단 여기다 작성
-// DI 라이브러리 안쓰고 DI 기능 만들기
-
 type Constructor<T> = new (...args: any[]) => T;
-type Dependency<T> = T | Constructor<T>;
-type Resolver<T> = (...args: any[]) => T;
-
-interface Dependencies {
-    [key: string]: Dependency<any>;
-}
-
-interface ServiceDescriptor<T> {
-    dependencies: Dependencies;
-    resolver: Resolver<T>;
-}
-
-interface ServiceCollection {
-    [key: string]: ServiceDescriptor<any>;
-}
 
 class Container {
-    private services: ServiceCollection = {};
+    private services: Map<string, Constructor<any>> = new Map();
 
-    register<T>(key: string, resolver: Resolver<T>, dependencies: Dependencies = {}) {
-        this.services[key] = { resolver, dependencies };
+    register<T>(key: string, type: Constructor<T>) {
+        this.services.set(key, type);
     }
 
     resolve<T>(key: string): T {
-        const service = this.services[key];
-        const dependencies = [];
-        for (const dependencyKey in service.dependencies) {
-            dependencies.push(this.resolve(dependencyKey));
+        const targetType = this.services.get(key);
+        if (!targetType) {
+            throw new Error(`Service not found: ${key}`);
         }
-        return service.resolver(...dependencies);
+        const dependencies = Reflect.getMetadata('design:paramtypes', targetType) || [];
+        const instances = dependencies.map((dependency: Constructor<any>) => this.resolve(dependency.name));
+        return new targetType(...instances);
     }
 }
 
-// UserRepository 클래스
+const container = new Container();
+
+function Injectable() {
+    return function (target: Constructor<any>) {
+        container.register(target.name, target);
+    };
+}
+
+function Route(method: string, path: string) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        Reflect.defineMetadata('route', { method, path }, target, propertyKey);
+    };
+}
+
+function registerRoutes(app: express.Application, controller: any) {
+    const prototype = Object.getPrototypeOf(controller);
+    const propertyNames = Object.getOwnPropertyNames(prototype);
+    for (const propertyName of propertyNames) {
+        if (propertyName !== 'constructor') {
+            const route = Reflect.getMetadata('route', prototype, propertyName);
+            if (route) {
+                (app as any)[route.method](route.path, prototype[propertyName].bind(controller));
+            }
+        }
+    }
+}
+
+@Injectable()
 class UserRepository {
     // ...
 }
 
-// UserService 클래스
+@Injectable()
 class UserService {
     constructor(private readonly userRepository: UserRepository) {}
     // ...
 }
 
-// UserController 클래스
+@Injectable()
 class UserController {
     constructor(private readonly userService: UserService) {}
-    // ...
+
+    @Route('get', '/users')
+    getUsers(req: Request, res: Response, next: NextFunction) {
+        const users = [{ id: 1, name: 'kim' }];
+        res.json(users);
+    }
+
+    @Route('get', '/user/data')
+    getUserData(req: Request, res: Response, next: NextFunction) {
+        const userData = { id: 1, name: 'kim' };
+        res.json(userData);
+    }
 }
 
-// 컨테이너 생성
-const container = new Container();
-
-// 의존성 등록
-container.register(UserRepository.name, () => new UserRepository());
-container.register(UserService.name, (userRepository: UserRepository) => new UserService(userRepository), {
-    [UserRepository.name]: UserRepository,
-});
-container.register(UserController.name, (userService: UserService) => new UserController(userService), {
-    [UserService.name]: UserService,
-});
-
-// 라우터 등록
 const userController = container.resolve<UserController>(UserController.name);
+registerRoutes(app, userController);
 
-app.get('/', (req: Request, res: Response, next: NextFunction) => {
-    res.send('hello world');
-});
-
-app.listen(process.env.PORT, () => {
-    console.log(`server listening on port ${process.env.PORT} `);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`server listening on port ${port}`);
 });
