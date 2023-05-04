@@ -1,5 +1,7 @@
 # Express로 DI framework 만들어보기
 
+-   [(개인 블로그) Express로 DI framework 만들어보기](https://joorrr.tistory.com/25)
+
 ## 목적
 
 Express로 Nest.js와 같이 런타임 때 알아서 의존성을 찾아서 주입해주는 DI 프레임워크 만드는게 목적임.

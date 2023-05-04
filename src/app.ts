@@ -17,20 +17,18 @@ app.use(cors(corsOptions));
 type Constructor<T> = new (...args: any[]) => T;
 
 class Container {
-    private services: Map<string, Constructor<any>> = new Map();
+    private layers: Map<string, Constructor<any>> = new Map();
 
     register<T>(key: string, type: Constructor<T>) {
-        this.services.set(key, type);
+        this.layers.set(key, type);
     }
 
     resolve<T>(key: string): T {
-        const targetType = this.services.get(key);
-
+        const targetType = this.layers.get(key);
         if (!targetType) {
             throw new Error(`Service not found: ${key}`);
         }
         const dependencies = Reflect.getMetadata('design:paramtypes', targetType) || [];
-
         const instances = dependencies.map((dependency: Constructor<any>) => this.resolve(dependency.name));
         return new targetType(...instances);
     }
@@ -96,9 +94,39 @@ class UserController {
     }
 }
 
+// @Injectable()
+// class TestRepository {
+//     // ...
+// }
+
+// @Injectable()
+// class TestService {
+//     constructor(private readonly testRepository: TestRepository) {}
+//     // ...
+// }
+
+// @Injectable()
+// class TestController {
+//     constructor(private readonly testService: TestService) {}
+
+//     @Route('get', '/test')
+//     getUsers(req: Request, res: Response, next: NextFunction) {
+//         const users = [{ id: 1, name: 'kim' }];
+//         res.json(users);
+//     }
+
+//     @Route('get', '/test/data')
+//     getUserData(req: Request, res: Response, next: NextFunction) {
+//         const userData = { id: 1, name: 'kim' };
+//         res.json(userData);
+//     }
+// }
+
 const userController = container.resolve<UserController>(UserController.name);
+// const testController = container.resolve<TestController>(TestController.name);
 
 registerRoutes(app, userController);
+// registerRoutes(app, testController);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
