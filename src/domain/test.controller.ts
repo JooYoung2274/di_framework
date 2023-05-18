@@ -8,8 +8,9 @@ export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Route('get', '/users')
-    getUsers(req: Request, res: Response, next: NextFunction) {
-        const users = [{ id: 1, name: 'kim' }];
+    async getUsers(req: Request, res: Response, next: NextFunction) {
+        const result = await this.userService.getUsers();
+        const users = [{ id: 1, name: result }];
         res.json(users);
     }
 
