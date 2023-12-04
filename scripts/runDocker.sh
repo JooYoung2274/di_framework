@@ -1,1 +1,1 @@
-docker run -p 3000:3000 352200611659.dkr.ecr.ap-northeast-2.amazonaws.com/test:lastest
+docker run -p 3000:3000 853456226543.dkr.ecr.ap-northeast-2.amazonaws.com/test-joo:lastest
