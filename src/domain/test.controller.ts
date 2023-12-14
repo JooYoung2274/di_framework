@@ -19,4 +19,10 @@ export class UserController {
         const userData = { id: 1, name: 'kim' };
         res.json(userData);
     }
+
+    @Route('get', '/')
+    getRoot(req: Request, res: Response, next: NextFunction) {
+        const data = { message: ' hello world' };
+        res.json(data);
+    }
 }

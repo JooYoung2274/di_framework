@@ -1,19 +1,9 @@
-#/appspec.yml
-version: 0.0
-os: linux
-files:
-    - source: /
-      destination: /deploy
-hooks:
-    AfterInstall:
-        - location: scripts/pullDocker.sh
-          timeout: 120
-          runas: root
-    ApplicationStart:
-        - location: scripts/runDocker.sh
-          timeout: 1000
-          runas: root
-    ApplicationStop:
-        - location: scripts/stopDocker.sh
-          timeout: 60
-          runas: root
+version: 0.1
+Resources:
+    - TargetService:
+          Type: AWS::ECS::Service
+          Properties:
+              TaskDefinition: <TASK_DEFINITION>
+              LoadBalancerInfo:
+                  ContainerName: '20231214_01'
+                  ContainerPort: 3000
