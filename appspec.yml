@@ -1,9 +1,17 @@
-version: 0.1
+version: 0.0
 Resources:
     - TargetService:
           Type: AWS::ECS::Service
           Properties:
-              TaskDefinition: <TASK_DEFINITION>
+              TaskDefinition: 'arn:aws:ecs:ap-northeast-2:853456226543:task-definition/20231214_01:1'
               LoadBalancerInfo:
                   ContainerName: '20231214_01'
                   ContainerPort: 3000
+              # Optional properties
+              PlatformVersion: 'LATEST'
+Hooks:
+    - BeforeInstall: 'LambdaFunctionToValidateBeforeInstall'
+    - AfterInstall: 'LambdaFunctionToValidateAfterInstall'
+    - AfterAllowTestTraffic: 'LambdaFunctionToValidateAfterTestTrafficStarts'
+    - BeforeAllowTraffic: 'LambdaFunctionToValidateBeforeAllowingProductionTraffic'
+    - AfterAllowTraffic: 'LambdaFunctionToValidateAfterAllowingProductionTraffic'
