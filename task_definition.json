@@ -1,0 +1,45 @@
+{
+    "family": "20231214_01",
+    "containerDefinitions": [
+        {
+            "name": "20231214_01",
+            "image": "853456226543.dkr.ecr.ap-northeast-2.amazonaws.com/ecs-test:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "20231214_01-3000-tcp",
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/20231214_01",
+                    "awslogs-region": "ap-northeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        }
+    ],
+    "taskRoleArn": "arn:aws:iam::853456226543:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::853456226543:role/ecsTaskExecutionRole",
+    "networkMode": "bridge",
+    "requiresCompatibilities": ["EC2"],
+    "cpu": "1024",
+    "memory": "3072",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
