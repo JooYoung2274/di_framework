@@ -7,4 +7,3 @@ Resources:
               LoadBalancerInfo:
                   ContainerName: '20231214_01'
                   ContainerPort: 3000
-              PlatformVersion: 'LATEST'
